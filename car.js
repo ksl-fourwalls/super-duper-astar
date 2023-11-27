@@ -25,7 +25,7 @@ class Car {
         this.angle += angle;
     }
 
-    draw(canvasContext, position) {
+    draw(canvasContext, coord) {
        // canvasContext.fillStyle = this.color;
 
         // Save the current state of the canvas context
@@ -37,7 +37,7 @@ class Car {
     
         // Draw the car (assumed rectangular representation)
        // canvasContext.fillRect(-25, -15, 50, 30);
-        canvasContext.drawImage(images[1], 0, 0, 50, 50, position.w/position.m_const - 25, position.h/position.m_const - 25, images[1].width, images[1].height);
+        canvasContext.drawImage(images[1], 0, 0, 50, 50, coord.x, coord.y, images[1].width, images[1].height);
     
         // Restore the canvas context to its original state
         canvasContext.restore();
@@ -68,9 +68,7 @@ class Car {
         if (this.autopilot) {
           const dx = this.autopilotTarget.x - this.x;
           const dy = this.autopilotTarget.y - this.y;
-          console.log(dy, dx);
           const distanceToTarget = Math.sqrt(dx * dx + dy * dy);
-            console.log(distanceToTarget);
           if (distanceToTarget > 1) {
             const angle = Math.atan2(dy, dx);
             const speedX = Math.cos(angle);

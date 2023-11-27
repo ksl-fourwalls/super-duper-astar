@@ -16,7 +16,7 @@ async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
-    let car = new Car(0, 175, "red");
+    let car = new Car(0,195, "red");
 
     let position = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
     let cameraX = car.x - position.w/position.m_const/2;
@@ -43,7 +43,7 @@ async function main() {
 
         }
     });
-    car.setAutopilot(500, 175);
+    car.setAutopilot(287,195);
 
     document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) {
@@ -88,16 +88,34 @@ async function main() {
 
     });
 
-    function update() {
+    let carCoord = {x: undefined, y: undefined};
+    function updateCoord() {
 
         car.autopilotMove();
-        position.x = car.x;
-        position.y = car.y;
+        // both are independent of each other
+        const constvalue = position.w/position.m_const - 25;
+        //position.w -> car.x
+        //canvas.w -> ?
 
+/*
+        if ((constvalue < car.x)) {
+            position.x = car.x - constvalue;
+            carCoord.x = constvalue;
+        } 
+        else {
+            carCoord.x = car.x;
+        }
+        if (constvalue < car.y) {
+            position.y = car.y - constvalue;
+            carCoord.y = constvalue;
+        } else {
+            carCoord.y = car.y;
+        }
+        */
     }
 
     function render() {
-        update();
+        updateCoord();
         canvasCtx.drawImage(images[0], position.x, position.y, 
             position.w/position.m_const, position.h/position.m_const, 
             0, 0, canvas.height, canvas.height);
@@ -110,7 +128,8 @@ async function main() {
             mapCanvasCtx.drawImage(images[0], 
                 0, 0, 200, 200);  
         }
-        car.draw(canvasCtx, position);
+        console.log(carCoord);
+        car.draw(canvasCtx, carCoord);
         window.requestAnimationFrame(render);
     }
     window.requestAnimationFrame(render);
