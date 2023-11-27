@@ -16,7 +16,8 @@ async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
-    let car = new Car(0,195, "red");
+    ycoord = 500
+    let car = new Car(0,ycoord, "red");
 
     let position = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
     let cameraX = car.x - position.w/position.m_const/2;
@@ -43,7 +44,7 @@ async function main() {
 
         }
     });
-    car.setAutopilot(287,195);
+    car.setAutopilot(600,ycoord);
 
     document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) {
@@ -97,28 +98,34 @@ async function main() {
         //position.w -> car.x
         //canvas.w -> ?
 
-/*
-        if ((constvalue < car.x)) {
-            position.x = car.x - constvalue;
-            carCoord.x = constvalue;
+
+        position.x = (car.x + car.w /2) - canvas.width / 2;
+        position.y = ( car.y + car.h / 2 ) -  canvas.height / 2;
+
+        // keep camera  in bound
+        if (position.y < 0) {
+            position.y = 0; }
+        if (position.x < 0) {
+                position.x = 0; }  
+
+        if (position.y >= (position.h - position.h/position.m_const)) {
+            position.y = position.h - position.h/position.m_const;
         } 
-        else {
-            carCoord.x = car.x;
+        if (position.x >= (position.w - position.w/position.m_const)) {
+            position.x = position.w - position.w/position.m_const; 
         }
-        if (constvalue < car.y) {
-            position.y = car.y - constvalue;
-            carCoord.y = constvalue;
-        } else {
-            carCoord.y = car.y;
-        }
-        */
+
+        carCoord.x = car.x - position.x; // car.x * canvas.width / position.w;
+        carCoord.y = car.y - position.y; // car.y * canvas.height / position.h;
+
+
     }
 
     function render() {
         updateCoord();
         canvasCtx.drawImage(images[0], position.x, position.y, 
             position.w/position.m_const, position.h/position.m_const, 
-            0, 0, canvas.height, canvas.height);
+            0, 0, canvas.width, canvas.height);
 
         if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0], position.x, position.y, 
             position.w/position.m_const, position.h/position.m_const, 
@@ -128,7 +135,6 @@ async function main() {
             mapCanvasCtx.drawImage(images[0], 
                 0, 0, 200, 200);  
         }
-        console.log(carCoord);
         car.draw(canvasCtx, carCoord);
         window.requestAnimationFrame(render);
     }

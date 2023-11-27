@@ -2,6 +2,8 @@ class Car {
     constructor(x, y, whichCar) {
       this.x = x;
       this.y = y;
+      this.w = 50;
+      this.h = 50;
       this.speed = 0;
       this.whichCar = whichCar;
       this.angle = 0;
@@ -35,10 +37,12 @@ class Car {
         //canvasContext.translate(this.x, this.y);
        // canvasContext.rotate(this.angle);
     
+       canvasContext.scale(0.7, 0.7);
+       
         // Draw the car (assumed rectangular representation)
        // canvasContext.fillRect(-25, -15, 50, 30);
-        canvasContext.drawImage(images[1], 0, 0, 50, 50, coord.x, coord.y, images[1].width, images[1].height);
-    
+        canvasContext.drawImage(images[1], 0, 0, this.w, this.h, coord.x, coord.y, images[1].width, images[1].height);
+
         // Restore the canvas context to its original state
         canvasContext.restore();
       }
@@ -69,6 +73,7 @@ class Car {
           const dx = this.autopilotTarget.x - this.x;
           const dy = this.autopilotTarget.y - this.y;
           const distanceToTarget = Math.sqrt(dx * dx + dy * dy);
+        
           if (distanceToTarget > 1) {
             const angle = Math.atan2(dy, dx);
             const speedX = Math.cos(angle);
