@@ -4,8 +4,8 @@ const mapcanvas = document.querySelector("#MapCanvas");
 const mapCanvasCtx = mapcanvas.getContext("2d");
 
 var images = [
-    "/images/untitled.png",
-    "/images/cars.png"
+    "images/untitled.png",
+    "images/cars.png"
   ].map(function(i) {
     var img = new Image();
     img.src = i;
