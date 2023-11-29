@@ -17,16 +17,17 @@ async function main() {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
     ycoord = 500
-    let car = new Car(0,ycoord, "red");
+    let car = new Car(0,ycoord, 0);
+    let obstacles = [new Car(200, 500, 1)]
 
-    let position = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
-    let cameraX = car.x - position.w/position.m_const/2;
+    let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
+    let cameraX = car.x - camera.w/camera.m_const/2;
 
-    canvasCtx.drawImage(images[0], position.x, position.y, position.w/position.m_const, position.h/position.m_const, 
-    0, 0, position.w, position.h);
-    mapCanvasCtx.drawImage(images[0], position.x, position.y, 
-        position.w/position.m_const, 
-        position.h/position.m_const, 
+    canvasCtx.drawImage(images[0], camera.x, camera.y, camera.w/camera.m_const, camera.h/camera.m_const, 
+    0, 0, camera.w, camera.h);
+    mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
+        camera.w/camera.m_const, 
+        camera.h/camera.m_const, 
         0, 0, 200, 200);
     let zoomFactorInt = 1;
     document.querySelector("#zoom").addEventListener("click", function() {
@@ -38,8 +39,8 @@ async function main() {
         }
         else {
             zoomFactorInt = 1;
-            mapCanvasCtx.drawImage(images[0], position.x, position.y, 
-                position.w/position.m_const, position.h/position.m_const, 
+            mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
+                camera.w/camera.m_const, camera.h/camera.m_const, 
                 0, 0, 200, 200);
 
         }
@@ -54,33 +55,33 @@ async function main() {
         switch (event.key) {
             case "ArrowDown":
                 /*
-                position.y += moveImg;
-                if (position.y >= (position.h - position.h/position.m_const)) {
-                    //position.y = position.h - position.h/position.m_const;
-                    position.y -= moveImg;
+                camera.y += moveImg;
+                if (camera.y >= (camera.h - camera.h/camera.m_const)) {
+                    //camera.y = camera.h - camera.h/camera.m_const;
+                    camera.y -= moveImg;
                 } 
 
                 */
               break;
             case "ArrowUp":
                 /*
-                position.y -= moveImg;
-                if (position.y < 0) {
-                    position.y = 0; }
+                camera.y -= moveImg;
+                if (camera.y < 0) {
+                    camera.y = 0; }
                     */
               break;
             case "ArrowLeft":
                 /*
-                position.x -= moveImg;
-                if (position.x < 0) {
-                    position.x = 0; }    
+                camera.x -= moveImg;
+                if (camera.x < 0) {
+                    camera.x = 0; }    
                     */    
                 break;
             case "ArrowRight":
                 /*
-                position.x += moveImg; 
-                if (position.x >= (position.w - position.w/position.m_const)) {
-                    position.x = position.w - position.w/position.m_const; }// images[0].width - moveImg; }
+                camera.x += moveImg; 
+                if (camera.x >= (camera.w - camera.w/camera.m_const)) {
+                    camera.x = camera.w - camera.w/camera.m_const; }// images[0].width - moveImg; }
                 break;
                 */
             default:
@@ -89,53 +90,47 @@ async function main() {
 
     });
 
-    let carCoord = {x: undefined, y: undefined};
+    let othervehiclespeed = {x:undefined, y:undefined};
+
     function updateCoord() {
 
         car.autopilotMove();
-        // both are independent of each other
-        const constvalue = position.w/position.m_const - 25;
-        //position.w -> car.x
-        //canvas.w -> ?
-
-
-        position.x = (car.x + car.w /2) - canvas.width / 2;
-        position.y = ( car.y + car.h / 2 ) -  canvas.height / 2;
-
+        //https://lazyfoo.net/tutorials/SDL/39_tiling/index.php
+        camera.x = (car.x + car.w /2) - canvas.width / 2;
+        camera.y =  ( car.y + car.h / 2 ) - canvas.height / 2 ;
         // keep camera  in bound
-        if (position.y < 0) {
-            position.y = 0; }
-        if (position.x < 0) {
-                position.x = 0; }  
-
-        if (position.y >= (position.h - position.h/position.m_const)) {
-            position.y = position.h - position.h/position.m_const;
-        } 
-        if (position.x >= (position.w - position.w/position.m_const)) {
-            position.x = position.w - position.w/position.m_const; 
+        if (camera.y < 0) {
+            camera.y = 0; 
         }
+        if (camera.x < 0) {
+                camera.x = 0;
+            }  
 
-        carCoord.x = car.x - position.x; // car.x * canvas.width / position.w;
-        carCoord.y = car.y - position.y; // car.y * canvas.height / position.h;
-
-
+        if (camera.y >= (camera.h - camera.h/camera.m_const)) {
+            camera.y = camera.h - camera.h/camera.m_const;
+        } 
+        if (camera.x >= (camera.w - camera.w/camera.m_const)) {
+            camera.x = camera.w - camera.w/camera.m_const; 
+        }
     }
-
     function render() {
         updateCoord();
-        canvasCtx.drawImage(images[0], position.x, position.y, 
-            position.w/position.m_const, position.h/position.m_const, 
+        canvasCtx.drawImage(images[0],camera.x, camera.y, 
+            camera.w/camera.m_const, camera.h/camera.m_const, 
             0, 0, canvas.width, canvas.height);
 
-        if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0], position.x, position.y, 
-            position.w/position.m_const, position.h/position.m_const, 
+        if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0],0,0, 
+            camera.w/camera.m_const, camera.h/camera.m_const, 
             0, 0, 200, 200);
         }
         else {
             mapCanvasCtx.drawImage(images[0], 
                 0, 0, 200, 200);  
         }
-        car.draw(canvasCtx, carCoord);
+        car.draw(canvasCtx, camera);
+        obstacles.forEach(element => {
+            element.draw(canvasCtx, camera);
+        });
         window.requestAnimationFrame(render);
     }
     window.requestAnimationFrame(render);
