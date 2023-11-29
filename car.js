@@ -28,15 +28,39 @@ class Car {
         this.angle += angle;
     }
 
+    /*
     drawRelative(canvasContext, coords) {
       canvasContext.save();
       canvasContext.scale(0.7, 0.7);
+      // 960px -> 1
+      // ? -> 3
       canvasContext.drawImage(images[1], this.w * this.whichCar, 0, this.w, this.h, 
         coords.x , coords.y, 
         images[1].width, images[1].height);
         canvasContext.restore();
 
     }
+    */
+
+    drawRelative(canvasContext, camera) {
+      // canvasContext.fillStyle = this.color;
+
+       // Save the current state of the canvas context
+       canvasContext.save();
+   
+      canvasContext.scale(0.7, 0.7);
+      
+       // Draw the car (assumed rectangular representation)
+      // canvasContext.fillRect(-25, -15, 50, 30);
+       canvasContext.drawImage(images[1], this.w * this.whichCar, 0, this.w, this.h, 
+         Math.round(this.x - camera.x), Math.round(this.y - camera.y), 
+         images[1].width, images[1].height);
+
+       // Restore the canvas context to its original state
+       canvasContext.restore();
+     }
+
+
     draw(canvasContext, camera) {
        // canvasContext.fillStyle = this.color;
 
@@ -54,7 +78,7 @@ class Car {
         // Draw the car (assumed rectangular representation)
        // canvasContext.fillRect(-25, -15, 50, 30);
         canvasContext.drawImage(images[1], this.w * this.whichCar, 0, this.w, this.h, 
-          this.x - camera.x , this.y - camera.y, 
+          Math.round((this.x - camera.x) * camera.m_const ), Math.round((this.y - camera.y)* camera.m_const), 
           images[1].width, images[1].height);
 
         // Restore the canvas context to its original state

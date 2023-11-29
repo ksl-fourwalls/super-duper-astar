@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        canvas {
+            border: 1px solid #000;
+            display: block;
+            margin: 20px auto;
+        }
+    </style>
+    <title>Car Simulator with Fancy Obstacles</title>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const canvasCtx = canvas.getContext('2d');
+
+    const mapcanvas = document.createElement("canvas");
+    mapcanvas.width = 200;
+    mapcanvas.height = 200;
+    const mapCanvasCtx = mapcanvas.getContext('2d');
+    document.body.appendChild(mapcanvas);
+
+    var images = [
+        "/images/untitled.png",
+        "/images/cars.png"
+    ].map(function(i) {
+        var img = new Image();
+        img.src = i;
+        return img;
+    });
+
+    class Car {
+        constructor(x, y, type) {
+            this.x = x;
+            this.y = y;
+            this.type = type;
+            this.width = 50;
+            this.height = 30;
+            this.color = this.getRandomColor();
+        }
+
+        getRandomColor() {
+            const colors = ['#ff5733', '#33ff57', '#5733ff', '#ff33a1'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        drawRelative(ctx, position) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x - position.x, this.y - position.y, this.width, this.height);
+        }
+
+        autopilotMove() {
+            // Your autopilot logic here
+        }
+    }
+
+    class Obstacle {
+        constructor(x, y, type) {
+            this.x = x;
+            this.y = y;
+            this.type = type;
+            this.width = 30;
+            this.height = 30;
+            this.color = this.getRandomColor();
+        }
+
+        getRandomColor() {
+            const colors = ['#ff5733', '#33ff57', '#5733ff', '#ff33a1'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        drawRelative(ctx, position) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x - position.x, this.y - position.y, this.width, this.height);
+        }
+    }
+
+    var obstacles = [
+        new Obstacle(200, 500, 0),
+        new Obstacle(300, 400, 1),
+        new Obstacle(400, 300, 2),
+        new Obstacle(500, 200, 3)
+    ];
+
+    async function main() {
+        await Promise.all(images.map(function(image) {
+            return new Promise(function(resolve, reject) {
+                image.onload = resolve;
+            });
+        }));
+
+        let car = new Car(0, 500, 0);
+
+        let position = { x: 0, y: 0, w: images[0].width, h: images[0].height, m_const: 3 };
+        let cameraX = car.x - position.w / position.m_const / 2;
+
+        function updateCoord() {
+            car.autopilotMove();
+            position.x = (car.x + car.width / 2) - canvas.width / 2;
+            position.y = (car.y + car.height / 2) - canvas.height / 2;
+
+            if (position.y < 0) {
+                position.y = 0;
+            }
+            if (position.x < 0) {
+                position.x = 0;
+            }
+            if (position.y >= (position.h - position.h / position.m_const)) {
+                position.y = position.h - position.h / position.m_const;
+            }
+            if (position.x >= (position.w - position.w / position.m_const)) {
+                position.x = position.w - position.w / position.m_const;
+            }
+        }
+
+        function render() {
+            updateCoord();
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+            canvasCtx.drawImage(images[0], position.x, position.y,
+                position.w / position.m_const, position.h / position.m_const,
+                0, 0, canvas.width, canvas.height);
+
+            mapCanvasCtx.clearRect(0, 0, mapcanvas.width, mapcanvas.height);
+            if (zoomFactorInt === 1) {
+                mapCanvasCtx.drawImage(images[0], position.x, position.y,
+                    position.w / position.m_const, position.h / position.m_const,
+                    0, 0, mapcanvas.width, mapcanvas.height);
+            } else {
+                mapCanvasCtx.drawImage(images[0], 0, 0,
+                    mapcanvas.width, mapcanvas.height);
+            }
+
+            car.drawRelative(canvasCtx, { x: canvas.width / 2 - car.width / 2, y: canvas.height / 2 - car.height / 2 });
+
+            obstacles.forEach(element => {
+                element.drawRelative(canvasCtx, { x: position.x, y: position.y });
+            });
+
+            window.requestAnimationFrame(render);
+        }
+
+        let zoomFactorInt = 1;
+        document.querySelector("#zoom").addEventListener("click", function() {
+            if (zoomFactorInt === 1) {
+                zoomFactorInt = 0;
+                mapCanvasCtx.drawImage(images[0],
+                    0, 0, mapcanvas.width, mapcanvas.height);
+            } else {
+                zoomFactorInt = 1;
+                mapCanvasCtx.drawImage(images[0], position.x, position.y,
+                    position.w / position.m_const, position.h / position.m_const,
+                    0, 0, mapcanvas.width, mapcanvas.height);
+            }
+        });
+
+        window.addEventListener("keydown", (event) => {
+            if (event.defaultPrevented) {
+                return;
+            }
+            let moveImg = 20;
+            switch (event.key) {
+                case "ArrowDown":
+                    car.y += moveImg;
+                    break;
+                case "ArrowUp":
+                    car.y -= moveImg;
+                    break;
+                case "ArrowLeft":
+                    car.x -= moveImg;
+                    break;
+                case "ArrowRight":
+                    car.x += moveImg;
+                    break;
+                default:
+                    return;
+            }
+        });
+
+        window.requestAnimationFrame(render);
+    }
+
+    main();
+</script>
+
+</body>
+</html>

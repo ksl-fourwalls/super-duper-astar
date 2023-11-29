@@ -16,15 +16,15 @@ async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
-    ycoord = 500
-    let car = new Car(0,ycoord, 0);
-    let obstacles = [new Car(200, 500, 1)]
+    ycoord = 100
+    let car = new Car(100,ycoord, 0);
+    let obstacles = [new Car( 100, ycoord, 1)]
 
     let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
-    let cameraX = car.x - camera.w/camera.m_const/2;
 
     canvasCtx.drawImage(images[0], camera.x, camera.y, camera.w/camera.m_const, camera.h/camera.m_const, 
     0, 0, camera.w, camera.h);
+
     mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
         camera.w/camera.m_const, 
         camera.h/camera.m_const, 
@@ -96,8 +96,8 @@ async function main() {
 
         car.autopilotMove();
         //https://lazyfoo.net/tutorials/SDL/39_tiling/index.php
-        camera.x = (car.x + car.w /2) - canvas.width / 2;
-        camera.y =  ( car.y + car.h / 2 ) - canvas.height / 2 ;
+        camera.x = Math.round((car.x + car.w /2) - canvas.width / 2);
+        camera.y =  Math.round(( car.y + car.h / 2 ) - canvas.height / 2);
         // keep camera  in bound
         if (camera.y < 0) {
             camera.y = 0; 
@@ -127,10 +127,30 @@ async function main() {
             mapCanvasCtx.drawImage(images[0], 
                 0, 0, 200, 200);  
         }
-        car.draw(canvasCtx, camera);
         obstacles.forEach(element => {
             element.draw(canvasCtx, camera);
         });
+        /*
+
+        car.x, car.y
+
+        x,y
+        --------------------
+        |                  |
+        |                  |
+        |                  |
+        |                  |
+        --------------------
+                        w,h
+        camera.w/camera.m_const
+        camera.x
+                          
+        */
+
+
+
+        car.drawRelative(canvasCtx, camera);
+
         window.requestAnimationFrame(render);
     }
     window.requestAnimationFrame(render);
