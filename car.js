@@ -3,7 +3,7 @@ class Car {
       this.x = x;
       this.y = y;
       this.w = 3 * 16;
-      this.h = 3 * 16;
+      this.h = 24;
       this.speed = {x, y};
       this.whichCar = whichCar;
       this.angle = 0;
@@ -48,13 +48,15 @@ class Car {
        // Save the current state of the canvas context
        canvasContext.save();
    
-      canvasContext.scale(0.7, 0.7);
+      //canvasContext.scale(0.5, 0.5);
+     // canvasContext.scale(0.3 * camera.w / canvas.width, 0.3 * camera.h / canvas.height);
+
       
        // Draw the car (assumed rectangular representation)
       // canvasContext.fillRect(-25, -15, 50, 30);
-       canvasContext.drawImage(images[1], this.w * this.whichCar, 0, this.w, this.h, 
+       canvasContext.drawImage(images[1], this.w, 0, images[1].width/2, images[1].height, 
          Math.round(this.x - camera.x), Math.round(this.y - camera.y), 
-         images[1].width, images[1].height);
+         images[1].width/2, images[1].height);
 
        // Restore the canvas context to its original state
        canvasContext.restore();
@@ -73,13 +75,14 @@ class Car {
 
        // canvasContext.rotate(this.angle);
     
-       canvasContext.scale(0.7, 0.7);
+       //canvasContext.scale(0.3 * camera.w / canvas.width, 0.3 * camera.h / canvas.height);
        
         // Draw the car (assumed rectangular representation)
        // canvasContext.fillRect(-25, -15, 50, 30);
         canvasContext.drawImage(images[1], this.w * this.whichCar, 0, this.w, this.h, 
-          Math.round((this.x - camera.x) * camera.m_const ), Math.round((this.y - camera.y)* camera.m_const), 
-          images[1].width, images[1].height);
+          Math.round((this.x - camera.x)), 
+          Math.round((this.y - camera.y)), 
+          images[1].width/2, images[1].height);
 
         // Restore the canvas context to its original state
         canvasContext.restore();

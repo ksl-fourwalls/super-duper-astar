@@ -16,18 +16,18 @@ async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
-    ycoord = 100
+    ycoord = 20
     let car = new Car(100,ycoord, 0);
     let obstacles = [new Car( 100, ycoord, 1)]
 
-    let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height, m_const: 3};
+    let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height};
 
-    canvasCtx.drawImage(images[0], camera.x, camera.y, camera.w/camera.m_const, camera.h/camera.m_const, 
+    canvasCtx.drawImage(images[0], camera.x, camera.y, canvas.width, canvas.height, 
     0, 0, camera.w, camera.h);
 
     mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
-        camera.w/camera.m_const, 
-        camera.h/camera.m_const, 
+        canvas.width, 
+        canvas.height, 
         0, 0, 200, 200);
     let zoomFactorInt = 1;
     document.querySelector("#zoom").addEventListener("click", function() {
@@ -40,12 +40,12 @@ async function main() {
         else {
             zoomFactorInt = 1;
             mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
-                camera.w/camera.m_const, camera.h/camera.m_const, 
+                canvas.widht, canvas.height, 
                 0, 0, 200, 200);
 
         }
     });
-    car.setAutopilot(600,ycoord);
+    car.setAutopilot(600*3,ycoord);
 
     document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) {
@@ -106,21 +106,21 @@ async function main() {
                 camera.x = 0;
             }  
 
-        if (camera.y >= (camera.h - camera.h/camera.m_const)) {
-            camera.y = camera.h - camera.h/camera.m_const;
+        if (camera.y >= (camera.h - canvas.height)) {
+            camera.y = camera.h - canvas.height;
         } 
-        if (camera.x >= (camera.w - camera.w/camera.m_const)) {
-            camera.x = camera.w - camera.w/camera.m_const; 
+        if (camera.x >= (camera.w - canvas.width)) {
+            camera.x = camera.w - canvas.width; 
         }
     }
     function render() {
         updateCoord();
         canvasCtx.drawImage(images[0],camera.x, camera.y, 
-            camera.w/camera.m_const, camera.h/camera.m_const, 
-            0, 0, canvas.width, canvas.height);
+            camera.w, camera.h, 
+            0, 0, camera.w, camera.h);
 
-        if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0],0,0, 
-            camera.w/camera.m_const, camera.h/camera.m_const, 
+        if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0],camera.x,camera.y, 
+            canvas.width, canvas.height, 
             0, 0, 200, 200);
         }
         else {
@@ -149,7 +149,7 @@ async function main() {
 
 
 
-        car.drawRelative(canvasCtx, camera);
+        car.draw(canvasCtx, camera);
 
         window.requestAnimationFrame(render);
     }
