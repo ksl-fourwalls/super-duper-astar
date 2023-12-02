@@ -4,14 +4,18 @@ class Car {
       this.y = y;
       this.w = 3 * 16;
       this.h = 24;
-      this.speed = {x, y};
+      this.speed = 0.8;
       this.whichCar = whichCar;
       this.angle = 0;
+      this.points = [1, 15, 2];
+      this.currentWaypointIndex = 0;
     }
   
-    move() {
-      this.x += this.speed.x;
-      this.y += this.speed.y;
+    getNextWaypoint() {
+      return this.points[this.currentWaypointIndex];
+  }
+    move(distance) {
+      this.y += distance;
     }
   
     accelerate(acceleration) {
@@ -94,7 +98,7 @@ class Car {
       canvasContext.fillRect(this.x, this.y, 50, 50); // Assuming a rectangular representation
     */
     //}
-    setAutopilot(targetX, targetY) {
+      setAutopilot(targetX, targetY) {
         this.autopilot = true;
         this.autopilotTarget = { x: targetX, y: targetY };
       }
@@ -112,11 +116,10 @@ class Car {
         
           if (distanceToTarget > 1) {
             const angle = Math.atan2(dy, dx);
-            this.speed.x = Math.cos(angle);
-            this.speed.y = Math.sin(angle);
-            this.move();
+
+            this.x += Math.cos(angle) * this.speed;
+            this.move(this.speed * Math.sin(angle));
                     // Adjust the angle to point towards the current waypoint
-/*
             const targetAngle = Math.atan2(dy, dx);
             const angleDifference = targetAngle - this.angle;
     
@@ -128,7 +131,6 @@ class Car {
             } else {
               this.turn(-turnAmount);
             }
-            */
           } else {
             this.disableAutopilot();
           }

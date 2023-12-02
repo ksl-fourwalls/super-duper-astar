@@ -11,6 +11,7 @@
         }
     </style>
     <title>Car Simulator with Fancy Obstacles</title>
+    <script src="path.js"></script>
 </head>
 <body>
 
@@ -20,173 +21,46 @@
     const canvas = document.getElementById('gameCanvas');
     const canvasCtx = canvas.getContext('2d');
 
-    const mapcanvas = document.createElement("canvas");
-    mapcanvas.width = 200;
-    mapcanvas.height = 200;
-    const mapCanvasCtx = mapcanvas.getContext('2d');
-    document.body.appendChild(mapcanvas);
+    let pathIdx = [
+        new Path(0,242,372,72,0),           // 0
+        new Path(0,372,372,72,0),           // 1
+        new Path(370,0,172,226,90),         // 2
+        new Path(370,480,172,142,90),       // 3
+        new Path(378,704,164,110,90),       // 4
+        new Path(158,822,222,68,0),         // 5
+        new Path(370,896,174,66,90),         // 6
+        new Path(544,894,90,62,0),            // 7
+        new Path(544,620,90,80,0),            // 8
+        new Path(640,702,92,190,90),           // 9
+        new Path(644,620,98,80,0),            // 10
+        new Path(734,620,128,78,0),           // 11
+        new Path(734,894,106,64,0),           // 12
+        new Path(834,704,126,254,90),          // 13
+        new Path(862,476,94,144,90),           // 14
+        new Path(368,222,364,252,0),          // 15
+        new Path(834,0,124,402,0)             // 16
+    ];
+    var images = new Image();
+    images.src = "images/untitled.png";
+    console.log(images);
+    images.addEventListener("load", function () {
+        canvas.width = images.width;
+        canvas.height = images.height;
+        canvasCtx.drawImage(images, 0, 0, images.width, images.height);
 
-    var images = [
-        "/images/untitled.png",
-        "/images/cars.png"
-    ].map(function(i) {
-        var img = new Image();
-        img.src = i;
-        return img;
+        for (let idx = 0; idx < pathIdx.length; idx++) {
+            canvasCtx.fillStyle = "yellow";
+            canvasCtx.fillRect(pathIdx[idx].x, pathIdx[idx].y,pathIdx[idx].w,pathIdx[idx].h);
+            canvasCtx.fillStyle = "red";
+            canvasCtx.font = "30px serif";
+            canvasCtx.fillText(idx.toString(),(pathIdx[idx].x+pathIdx[idx].w/2),pathIdx[idx].y+pathIdx[idx].h/2 );
+        }
+
+
     });
 
-    class Car {
-        constructor(x, y, type) {
-            this.x = x;
-            this.y = y;
-            this.type = type;
-            this.width = 50;
-            this.height = 30;
-            this.color = this.getRandomColor();
-        }
 
-        getRandomColor() {
-            const colors = ['#ff5733', '#33ff57', '#5733ff', '#ff33a1'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
 
-        drawRelative(ctx, position) {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x - position.x, this.y - position.y, this.width, this.height);
-        }
-
-        autopilotMove() {
-            // Your autopilot logic here
-        }
-    }
-
-    class Obstacle {
-        constructor(x, y, type) {
-            this.x = x;
-            this.y = y;
-            this.type = type;
-            this.width = 30;
-            this.height = 30;
-            this.color = this.getRandomColor();
-        }
-
-        getRandomColor() {
-            const colors = ['#ff5733', '#33ff57', '#5733ff', '#ff33a1'];
-            return colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        drawRelative(ctx, position) {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x - position.x, this.y - position.y, this.width, this.height);
-        }
-    }
-
-    var obstacles = [
-        new Obstacle(200, 500, 0),
-        new Obstacle(300, 400, 1),
-        new Obstacle(400, 300, 2),
-        new Obstacle(500, 200, 3)
-    ];
-
-    async function main() {
-        await Promise.all(images.map(function(image) {
-            return new Promise(function(resolve, reject) {
-                image.onload = resolve;
-            });
-        }));
-
-        let car = new Car(0, 500, 0);
-
-        let position = { x: 0, y: 0, w: images[0].width, h: images[0].height, m_const: 3 };
-        let cameraX = car.x - position.w / position.m_const / 2;
-
-        function updateCoord() {
-            car.autopilotMove();
-            position.x = (car.x + car.width / 2) - canvas.width / 2;
-            position.y = (car.y + car.height / 2) - canvas.height / 2;
-
-            if (position.y < 0) {
-                position.y = 0;
-            }
-            if (position.x < 0) {
-                position.x = 0;
-            }
-            if (position.y >= (position.h - position.h / position.m_const)) {
-                position.y = position.h - position.h / position.m_const;
-            }
-            if (position.x >= (position.w - position.w / position.m_const)) {
-                position.x = position.w - position.w / position.m_const;
-            }
-        }
-
-        function render() {
-            updateCoord();
-            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-            canvasCtx.drawImage(images[0], position.x, position.y,
-                position.w / position.m_const, position.h / position.m_const,
-                0, 0, canvas.width, canvas.height);
-
-            mapCanvasCtx.clearRect(0, 0, mapcanvas.width, mapcanvas.height);
-            if (zoomFactorInt === 1) {
-                mapCanvasCtx.drawImage(images[0], position.x, position.y,
-                    position.w / position.m_const, position.h / position.m_const,
-                    0, 0, mapcanvas.width, mapcanvas.height);
-            } else {
-                mapCanvasCtx.drawImage(images[0], 0, 0,
-                    mapcanvas.width, mapcanvas.height);
-            }
-
-            car.drawRelative(canvasCtx, { x: canvas.width / 2 - car.width / 2, y: canvas.height / 2 - car.height / 2 });
-
-            obstacles.forEach(element => {
-                element.drawRelative(canvasCtx, { x: position.x, y: position.y });
-            });
-
-            window.requestAnimationFrame(render);
-        }
-
-        let zoomFactorInt = 1;
-        document.querySelector("#zoom").addEventListener("click", function() {
-            if (zoomFactorInt === 1) {
-                zoomFactorInt = 0;
-                mapCanvasCtx.drawImage(images[0],
-                    0, 0, mapcanvas.width, mapcanvas.height);
-            } else {
-                zoomFactorInt = 1;
-                mapCanvasCtx.drawImage(images[0], position.x, position.y,
-                    position.w / position.m_const, position.h / position.m_const,
-                    0, 0, mapcanvas.width, mapcanvas.height);
-            }
-        });
-
-        window.addEventListener("keydown", (event) => {
-            if (event.defaultPrevented) {
-                return;
-            }
-            let moveImg = 20;
-            switch (event.key) {
-                case "ArrowDown":
-                    car.y += moveImg;
-                    break;
-                case "ArrowUp":
-                    car.y -= moveImg;
-                    break;
-                case "ArrowLeft":
-                    car.x -= moveImg;
-                    break;
-                case "ArrowRight":
-                    car.x += moveImg;
-                    break;
-                default:
-                    return;
-            }
-        });
-
-        window.requestAnimationFrame(render);
-    }
-
-    main();
 </script>
 
 </body>

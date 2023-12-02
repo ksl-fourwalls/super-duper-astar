@@ -12,15 +12,37 @@ var images = [
     return img;
 });
 
+let PathLister = [
+    new Path(0,242,372,72,0,[15]),           // 0
+    new Path(0,372,372,72,0,[15]),           // 1
+    new Path(370,0,172,226,90,[15]),         // 2
+    new Path(370,480,172,142,90,[15,8,4]),       // 3
+    new Path(378,704,164,110,90,[3,8,6,5]),       // 4
+    new Path(158,822,222,68,0),         // 5
+    new Path(370,896,174,66,90),         // 6
+    new Path(544,894,90,62,0),            // 7
+    new Path(544,620,90,80,0),            // 8
+    new Path(640,702,92,190,90),           // 9
+    new Path(644,620,98,80,0),            // 10
+    new Path(734,620,128,78,0),           // 11
+    new Path(734,894,106,64,0),           // 12
+    new Path(834,704,126,254,90),          // 13
+    new Path(862,476,94,144,90),           // 14
+    new Path(368,222,364,252,0),          // 15
+    new Path(834,0,124,402,0,[0,1,2,3])             // 16
+];
+
 async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
-    ycoord = 20
+    const mapSize = 300;
+   const  ycoord = 280
     let car = new Car(100,ycoord, 0);
-    let obstacles = [new Car( 100, ycoord, 1)]
+    let obstacles = [new Car( 100, ycoord, 1), new Car( 180, ycoord, 1)]
 
     let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height};
+
 
     canvasCtx.drawImage(images[0], camera.x, camera.y, canvas.width, canvas.height, 
     0, 0, camera.w, camera.h);
@@ -28,24 +50,24 @@ async function main() {
     mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
         canvas.width, 
         canvas.height, 
-        0, 0, 200, 200);
+        0, 0, mapSize, mapSize);
     let zoomFactorInt = 1;
     document.querySelector("#zoom").addEventListener("click", function() {
         if (zoomFactorInt === 1)  {
             zoomFactorInt = 0;
             mapCanvasCtx.drawImage(images[0], 
-                0, 0, 200, 200);  
+                0, 0, mapSize, mapSize);  
 
         }
         else {
             zoomFactorInt = 1;
             mapCanvasCtx.drawImage(images[0], camera.x, camera.y, 
-                canvas.widht, canvas.height, 
-                0, 0, 200, 200);
+                canvas.width, canvas.height, 
+                0, 0, mapSize, mapSize);
 
         }
     });
-    car.setAutopilot(600*3,ycoord);
+    car.setAutopilot(600,ycoord*2);
 
     document.addEventListener("keydown", (event) => {
         if (event.defaultPrevented) {
@@ -121,11 +143,11 @@ async function main() {
 
         if (zoomFactorInt === 1)  {mapCanvasCtx.drawImage(images[0],camera.x,camera.y, 
             canvas.width, canvas.height, 
-            0, 0, 200, 200);
+            0, 0, mapSize, mapSize);
         }
         else {
             mapCanvasCtx.drawImage(images[0], 
-                0, 0, 200, 200);  
+                0, 0, mapSize, mapSize);  
         }
         obstacles.forEach(element => {
             element.draw(canvasCtx, camera);
