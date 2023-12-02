@@ -32,14 +32,16 @@ let PathLister = [
     new Path(834,0,124,402,0,[0,1,2,3])             // 16
 ];
 
+let obstacles;
+
 async function main() {
     await Promise.all(images.map(function(image) {
         return new Promise(function(resolve, reject) {image.onload = resolve;});
     }));
     const mapSize = 300;
-   const  ycoord = 280
+   const  ycoord = 240
     let car = new Car(100,ycoord, 0);
-    let obstacles = [new Car( 100, ycoord, 1), new Car( 180, ycoord, 1)]
+    obstacles = [new Car( 100, ycoord, 1), new Car( 180, ycoord, 1), new Car( 100, 280, 1)]
 
     let camera = { x: 0, y: 0 , w: images[0].width, h:images[0].height};
 
