@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,10 +22,10 @@
     const canvas = document.getElementById('gameCanvas');
     const canvasCtx = canvas.getContext('2d');
 
-    let pathIdx = [
+    let PathLister = [
         new Path(0,242,372,72,0),           // 0
         new Path(0,372,372,72,0),           // 1
-        new Path(370,0,172,226,90),         // 2
+        new Path(370,0,173,226,90),         // 2
         new Path(370,480,172,142,90),       // 3
         new Path(378,704,164,110,90),       // 4
         new Path(158,822,222,68,0),         // 5
@@ -63,5 +64,55 @@
 
 </script>
 
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+</head>
+<body>
+    <!-- Your HTML content here -->
+
+    <script>
+// Load the DeepLab model
+async function loadModel() {
+    const model = await tf.loadGraphModel('group1-shard1of1');
+    return model;
+}
+
+// Perform road extraction using the DeepLab model
+async function extractRoad(imageElement) {
+    const model = await loadModel();
+
+    // Preprocess the input image
+    const inputTensor = tf.browser.fromPixels(imageElement);
+    const preprocessedInput = inputTensor.div(tf.scalar(127)).sub(tf.scalar(1)).expandDims();
+
+    // Run the model
+    const segmentationResult = model.predict(preprocessedInput);
+
+    // Extract the road mask (assuming road class is labeled 21 in Pascal VOC)
+    const roadMask = segmentationResult.argMax(3).equal(tf.scalar(21));
+
+    // Convert the mask to a regular JavaScript array
+    const roadMaskArray = await roadMask.array();
+
+    // Extract road pixels from the original image
+    const roadPixels = inputTensor.mul(tf.tensor3d(roadMaskArray, roadMask.shape).expandDims(2));
+
+    // Display the result (for demonstration purposes)
+    tf.browser.toPixels(roadPixels, document.getElementById('outputCanvas'));
+}
+
+// Example usage
+const imageElement = document.getElementById('images/untitled.png');
+extractRoad(imageElement);
+
+    </script>
 </body>
 </html>
