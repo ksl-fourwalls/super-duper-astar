@@ -1,14 +1,13 @@
 class Car {
-  constructor(x, y, whichCar) {
+  constructor(x, y, whichCar, angle=0) {
     this.x = x;
     this.y = y;
     this.w = 3 * 16;
     this.h = 24;
     this.speed = 1.8;
     this.whichCar = whichCar;
-    this.angle = 0;
+    this.angle = angle * Math.PI/180;
     this.points = [];
-    this.whichPath = [0, 15, 3, 8,10, 9]; 
     this.currentWaypointIndex = 0;
   }
 
@@ -68,21 +67,112 @@ class Car {
 
   }
 
-  setAutopilot(targetX, targetY) {
+  setAutopilot(src, dst) {
     this.autopilot = true;
-    //this.autopilotTarget = { x: targetX, y: targetY };
-    this.autopilotTarget = {
-      x: PathLister[this.whichPath[0]].x + PathLister[this.whichPath[0]].w + 200,
-      y: PathLister[this.whichPath[0]].y + PathLister[this.whichPath[0]].h / 2
-    };
+
+let paths = [];
+// Utility function for printing
+// the found path in graph
+function printpath(path) {
+	let size = path.length;
+  /*
+	for (let i = 0; i < size; i++) {
+		document.write(path[i]);
+    document.write(",");
+	}*/
+  paths.push(path);
+}
+
+// Utility function to check if current
+// vertex is already present in path
+function isNotVisited(x, path) {
+	let size = path.length;
+	for (let i = 0; i < size; i++) {
+		if (path[i] === x) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Utility function for finding paths in graph
+// from source to destination
+function findpaths(g, src, dst, v) {
+	// Create a queue which stores
+	// the paths
+	let q = [];
+
+	// Path array to store the current path
+	let path = [];
+	path.push(src);
+	q.push(path.slice());
+	
+	while (q.length) {
+		path = q.shift();
+		let last = path[path.length - 1];
+
+		// If last vertex is the desired destination
+		// then print the path
+		if (last === dst) {
+			printpath(path);
+		}
+
+		// Traverse to all the nodes connected to
+		// current vertex and push new path to queue
+		for (let i = 0; i < g[last].length; i++) {
+			if (isNotVisited(g[last][i], path)) {
+				let newpath = path.slice();
+				newpath.push(g[last][i]);
+				q.push(newpath);
+			}
+		}
+	}
+}
+
+// Driver code
+
+	// Number of vertices
+	let v = Graph.length;
+	let g = Array.from({ length: v }, () => []);
+
+	// Construct a graph
+
+  for (let i = 0; i < Graph.length; i++) {
+    g[Graph[i][0]].push(Graph[i][1]);
+    g[Graph[i][1]].push(Graph[i][0]);
+  }
 
 
-    for (var i = 0; i < 2; i++) {
-         this.points.push({x: PathLister[this.whichPath[0]].x,y: 
-          PathLister[this.whichPath[0]].y + PathLister[this.whichPath[0]].h/2});
+	// Function for finding the paths
+	findpaths(g, src, dst, v);
+
+  for (let i = 1; i < paths[0].length; i++)
+  {
+    for (let j = 0; j < Graph.length; j++)
+    {
+      if ((paths[0][i-1] === Graph[j][0]) && (paths[0][i] === Graph[j][1]))
+      {
+        for (let k = 0; k < Graph[j][2].length; k++)
+        {
+          let point = {x: Graph[j][2][k][0], y: Graph[j][2][k][1]};
+          this.points.push(point);
+        }
+      }
+      else if ((paths[0][i-1] === Graph[j][1]) && (paths[0][i] === Graph[j][0]))
+      {
+        for (let k = Graph[j][2].length-1; k >= 0; k--)
+        {
+          let point = {x: Graph[j][2][k][0], y: Graph[j][2][k][1]};
+          this.points.push(point);
+        }
+      }
     }
+  }
+  console.log(paths[0]);
+  console.log(this.points);
 
-
+   this.autopilotTarget = {x: this.points[0].x,y: this.points[0].y};
+    //this.points.push(point);
   }
 
   disableAutopilot() {
@@ -112,101 +202,51 @@ class Car {
           if (
             (
             (this.x - this.w / 2) < (obstacle.x + obstacle.w) &&
-            (this.x + 3 * this.w / 2) > obstacle.x &&
+            (this.x +  this.w / 2) > obstacle.x &&
             (this.y - this.h / 2) < (obstacle.y + obstacle.h) &&
-            (this.y + 3 * this.h / 2) > obstacle.y
-            )
-            || (
-            (this.x -  3 * this.w / 2) < (obstacle.x + obstacle.w) &&
+            (this.y +  this.h / 2) > obstacle.y
+            ) || (
+            (this.x -   this.w / 2) < (obstacle.x + obstacle.w) &&
             (this.x + this.w / 2) > obstacle.x && 
-            (this.y - 3 * this.h / 2) < (obstacle.y + obstacle.h) &&
+            (this.y -  this.h / 2) < (obstacle.y + obstacle.h) &&
             (this.y +  this.h / 2) > obstacle.y
             )
           ) {
-            console.log("helo");
             // Collision detected, adjust movement
-            this.x += this.speed * Math.cos(angle);
-            this.y += this.speed * Math.sin(angle);
-          }
+            this.x += this.speed * Math.cos(angle)-2.5;
+            this.y += this.speed * Math.sin(angle)-2.5;
+          }         
         }
 
 
         for (const idx in global_obstacles) {
-          const obstacle = global_obstacles[idx];
+          const obstacle = {
+            x: global_obstacles[idx][0], 
+            y: global_obstacles[idx][1],
+            w: global_obstacles[idx][2],
+            h: global_obstacles[idx][3]
+          };
+
+          /*
           if (
-            (this.x - this.w / 2) < (obstacle[0] + obstacle[2]) &&
-            (this.x + 3 * this.w / 2) > obstacle[0] &&
-            (this.y - this.h / 2) < (obstacle[1] + obstacle[3]) &&
-            (this.y + 3 * this.h / 2) > obstacle[1]
-          ) {
+            (this.x -  this.w / 2) < (obstacle.x + obstacle.w) &&
+            (this.x + this.w / 2) > obstacle.x &&
+            (this.y - this.h / 2) < (obstacle.y + obstacle.h) &&
+            (this.y + this.h / 2) > obstacle.y
+            ) {
+              console.log("fuckyou");
+
             // Collision detected, adjust movement
             this.x -= this.speed * Math.cos(angle);
             this.y -= this.speed * Math.sin(angle);
-          }
-        }
-
-        /*
-        const compareval = { x: undefined, y: undefined};
-        const rad = PathLister[this.points[this.currentWaypointIndex]].angle* Math.PI / 180;
-        const constval = 5;
-        if (Math.cos(rad) == 1 || Math.cos(rad) == -1) {
-          compareval.x = PathLister[this.points[this.currentWaypointIndex]].x
-          if (this.x < compareval.x)
-          {
-            this.x = PathLister[this.points[this.currentWaypointIndex]].x + constval;
-          }
-          compareval.x += PathLister[this.points[this.currentWaypointIndex]].w;
-          if (this.x > compareval.x)
-          {
-            this.x = compareval.x - constval;
-
-
-        } else {
-          compareval.y = PathLister[this.points[this.currentWaypointIndex]].y;
-          if (this.y < compareval.y)
-          {
-            this.y = compareval.y + constval;
-          }
-          compareval.y += PathLister[this.points[this.currentWaypointIndex]].h;
-          if (this.y > compareval.y)
-          {
-            this.y = compareval.y - constval;
-          }
-        }
-        /*
-        console.log(PathLister[this.points[this.currentWaypointIndex]].x + PathLister[this.points[this.currentWaypointIndex]].w *
-          (Math.cos(PathLister[this.points[this.currentWaypointIndex]].angle * Math.PI / 180) / 2) - this.w,
-            PathLister[this.points[this.currentWaypointIndex]].y + PathLister[this.points[this.currentWaypointIndex]].h *
-          (Math.sin(PathLister[this.points[this.currentWaypointIndex]].angle * Math.PI / 180) / 2) - this.h);
-          */
-
-          /*
-        if ((this.x-this.w/2) < PathLister[this.points[this.currentWaypointIndex]].x)
-          this.x = PathLister[this.points[this.currentWaypointIndex]].x + this.w/2;
-        */
-      } else if (this.currentWaypointIndex < this.points.length) {
-        console.log("fuck");
-        this.autopilotTarget = this.points[this.currentWaypointIndex++];
-        /*
-        const angle = PathLister[this.points[this.currentWaypointIndex]].angle;
-        const rad = angle * Math.PI / 180;
-        //console.log(Math.cos(rad),Math.sin(rad));
-
-        console.log(angle, this.angle/Math.PI * 180);
-        /*
-        if (Math.cos(rad) == 1 || Math.cos(rad) == -1) {
-          this.autopilotTarget.x = PathLister[this.points[this.currentWaypointIndex]].x+ PathLister[this.points[this.currentWaypointIndex]].w * Math.cos(rad);
-          this.autopilotTarget.y = PathLister[this.points[this.currentWaypointIndex]].y + PathLister[this.points[this.currentWaypointIndex]].h/2;
-        }
-        else //else if (Math.sin(rad) == 1 || Math.sin(rad) == -1)
-        {
-          this.autopilotTarget.x = PathLister[this.points[this.currentWaypointIndex]].x + PathLister[this.points[this.currentWaypointIndex]].w/2;
-          this.autopilotTarget.y = PathLister[this.points[this.currentWaypointIndex]].y + PathLister[this.points[this.currentWaypointIndex]].h* Math.sin(rad);
-        }
-          */
-
+          }*/
+        } 
+       } else if (++this.currentWaypointIndex < this.points.length) {
+        this.autopilotTarget = this.points[this.currentWaypointIndex];
+        console.log("hello");
       } 
       else {
+        console.log("stop");
         this.disableAutopilot();
       }
     }

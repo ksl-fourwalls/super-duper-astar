@@ -44,51 +44,29 @@ let PathLister = [
     new Path(834, 0, 124, 402, 0)             // 16
 ];
 
+var Graph = [
+    [0,15,[[372,266]]],
+    [2,15,[[444,226]]],
+    [1,15,[[372,406]]],
+    [15,3,[[432,480]]],
+    [15,16,[[734,406]]],
+    [3,8,[[444,622],[544,648]]],
+    [3,4,[[444,622],[444,704]]],
+    [8,10,[[634,648],[644,648]]],
+    [8,9,[[634,648],[644,648],[674,702]]],
+    [9,12,[[674,892], [734,914]]],
+    [4,5,[[444,814], [380,844]]],
+    [4,6,[[444,814], [444,896]]],
+    [6,7,[[544,915]]],
+    [7,12,[[634,915], [734,915]]],
+    [7,9,[[674,892]]],
+    [12,13,[[834,904]]],
+    [11,13,[[862,648], [885,704]]],
+    [11,14,[[862,648], [897,620]]],
+    [14,16,[[897,476],[884,402]]]
+];
+
 let obstacles;
-
-function checkCollision(a, b) {
-    //The sides of the rectangles
-    let leftA, leftB;
-    let rightA, rightB;
-    let topA, topB;
-    let bottomA, bottomB;
-
-    //Calculate the sides of rect A
-    leftA = a.x;
-    rightA = a.x + a.w;
-    topA = a.y;
-    bottomA = a.y + a.h;
-
-    //Calculate the sides of rect B
-    leftB = b.x;
-    rightB = b.x + b.w;
-    topB = b.y;
-    bottomB = b.y + b.h;
-
-    //If any of the sides from A are outside of B
-    if( bottomA <= topB )
-    {
-        return false;
-    }
-
-    if( topA >= bottomB )
-    {
-        return false;
-    }
-
-    if( rightA <= leftB )
-    {
-        return false;
-    }
-
-    if( leftA >= rightB )
-    {
-        return false;
-    }
-
-    //If none of the sides from A are outside B
-    return true;
-}
 
 async function main() {
     await Promise.all(images.map(function (image) {
@@ -97,7 +75,7 @@ async function main() {
     const mapSize = 300;
     const ycoord = 240
     let car = new Car(100, ycoord+32, 0);
-    obstacles = [new Car(100, ycoord, 1), new Car(180, ycoord, 1)]
+    obstacles = [new Car(100, ycoord, 1), new Car(180, ycoord, 1), new Obstacle(541,334,48,32)/* ,new Car(447,613,1,90)*/]
 
     let camera = { x: 0, y: 0, w: images[0].width, h: images[0].height };
 
@@ -126,7 +104,7 @@ async function main() {
         }
     });
 
- car.setAutopilot();
+ car.setAutopilot(0, 8);
     mapcanvas.addEventListener("click", function(e) {
         if (zoomFactorInt == 1)
             return;
