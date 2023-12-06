@@ -25,43 +25,45 @@ let global_obstacles = [
 ];
 
 let PathLister = [
-    new Path(0, 242, 372, 72, 0, [15]),           // 0
-    new Path(0, 372, 372, 72, 0, [15]),           // 1
-    new Path(370, 0, 172, 226, 90, [15]),         // 2
-    new Path(370, 480, 172, 142, 90, [15, 8, 4]),       // 3
-    new Path(378, 704, 164, 110, 90, [3, 8, 6, 5]),       // 4
-    new Path(158, 822, 222, 68, 0,[4,6]),         // 5
-    new Path(370, 896, 174, 66, 90,[7,4,5]),         // 6
-    new Path(544, 894, 90, 62, 0,[6,9,12]),            // 7
-    new Path(544, 620, 90, 80, 180,[3,4,10]),            // 8
-    new Path(640, 702, 92, 190, 90,[10,7,12]),           // 9
-    new Path(644, 620, 98, 80, 180,[11,8,9]),            // 10
-    new Path(734, 620, 128, 78, 0),           // 11
+    new Path(0, 242, 372, 72, 0 ),           // 0
+    new Path(0, 372, 372, 72, 0 ),           // 1
+    new Path(370, 0, 172, 226, 90 ),         // 2
+    new Path(370, 480, 172, 142, 90 ),       // 3
+    new Path(378, 704, 164, 110, 90 ),       // 4
+    new Path(158, 822, 222, 68, 0),         // 5
+    new Path(370, 896, 174, 66, 90),         // 6
+    new Path(544, 894, 90, 62, 0),            // 7
+    new Path(544, 620, 90, 80, 180),            // 8
+    new Path(640, 702, 92, 190, 90),           // 9
+    new Path(644, 620, 98, 80, 180),            // 10
+    new Path(734, 620, 128, 78, 0, +15),           // 11
     new Path(734, 894, 106, 64, 0),           // 12
     new Path(834, 704, 126, 254, 90),          // 13
     new Path(862, 476, 94, 144, 90),           // 14
-    new Path(368, 222, 364, 252, 0,[0, 1, 2, 3] ),          // 15
+    new Path(368, 222, 364, 252, 0 ),          // 15
     new Path(834, 0, 124, 402, 0)             // 16
 ];
 
 var Graph = [
-    [0,15,[[372,266]]],
+    [0,15,[[372,276]]],
     [2,15,[[444,226]]],
     [1,15,[[372,406]]],
     [15,3,[[432,480]]],
-    [15,16,[[734,406]]],
+    [15,16,[[481,275], [649,279],[734,406], [870,424]]],
     [3,8,[[444,622],[544,648]]],
     [3,4,[[444,622],[444,704]]],
     [8,10,[[634,648],[644,648]]],
     [8,9,[[634,648],[644,648],[674,702]]],
     [9,12,[[674,892], [734,914]]],
-    [4,5,[[444,814], [380,844]]],
+    [4,5,[[444,814], [401,843], [380,848]]],
     [4,6,[[444,814], [444,896]]],
     [6,7,[[544,915]]],
     [7,12,[[634,915], [734,915]]],
     [7,9,[[674,892]]],
     [12,13,[[834,904]]],
+    [10,11,[[735,658]]],
     [11,13,[[862,648], [885,704]]],
+    [13,14,[[885,704]]],
     [11,14,[[862,648], [897,620]]],
     [14,16,[[897,476],[884,402]]]
 ];
@@ -75,7 +77,10 @@ async function main() {
     const mapSize = 300;
     const ycoord = 240
     let car = new Car(100, ycoord+32, 0);
-    obstacles = [new Car(100, ycoord, 1), new Car(180, ycoord, 1), new Obstacle(541,334,48,32)/* ,new Car(447,613,1,90)*/]
+    obstacles = [new Car(100, ycoord, 1), new Car(180, ycoord, 1), 
+        new Obstacle(541,334,48,32), new Car(497,693,1,90),
+        new Obstacle(321,780,60,37), new Car(553,403, 1)
+    ]
 
     let camera = { x: 0, y: 0, w: images[0].width, h: images[0].height };
 
@@ -104,7 +109,9 @@ async function main() {
         }
     });
 
- car.setAutopilot(0, 8);
+    car.setAutopilot(1, 10);
+//obstacles[0].setAutopilot(1, 6);
+
     mapcanvas.addEventListener("click", function(e) {
         if (zoomFactorInt == 1)
             return;
@@ -128,11 +135,10 @@ async function main() {
 
     });
 
-    let othervehiclespeed = { x: undefined, y: undefined };
-
     function updateCoord() {
 
         car.autopilotMove();
+
         //https://lazyfoo.net/tutorials/SDL/39_tiling/index.php
         camera.x = Math.round((car.x + car.w / 2) - canvas.width / 2);
         camera.y = Math.round((car.y + car.h / 2) - canvas.height / 2);

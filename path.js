@@ -1,11 +1,11 @@
 class Path {
-    constructor (x, y, w, h, angle, possiblePath=[]) {
+    constructor (x, y, w, h, angle, weight=1) {
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
         this.angle = angle;
-        this.possiblePath = possiblePath;
+        this.weight = weight;
     }
 }
 class Obstacle {

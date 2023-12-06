@@ -68,51 +68,128 @@
 </html>
 -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-</head>
+<html>
+
 <body>
-    <!-- Your HTML content here -->
+<script>
+    class Node {
+  constructor(parent, position) {
+    this.parent = parent;
+    this.position = position;
+    this.g = 0;
+    this.h = 0;
+    this.f = 0;
+  }
 
-    <script>
-// Load the DeepLab model
-async function loadModel() {
-    const model = await tf.loadGraphModel('group1-shard1of1');
-    return model;
+  isEqual(other) {
+    return this.position[0] === other.position[0] && this.position[1] === other.position[1];
+  }
 }
 
-// Perform road extraction using the DeepLab model
-async function extractRoad(imageElement) {
-    const model = await loadModel();
+function astar(maze, start, end) {
+  const startNode = new Node(null, start);
+  startNode.g = startNode.h = startNode.f = 0;
 
-    // Preprocess the input image
-    const inputTensor = tf.browser.fromPixels(imageElement);
-    const preprocessedInput = inputTensor.div(tf.scalar(127)).sub(tf.scalar(1)).expandDims();
+  const endNode = new Node(null, end);
+  endNode.g = endNode.h = endNode.f = 0;
 
-    // Run the model
-    const segmentationResult = model.predict(preprocessedInput);
+  const openList = [];
+  const closedList = new Set();
 
-    // Extract the road mask (assuming road class is labeled 21 in Pascal VOC)
-    const roadMask = segmentationResult.argMax(3).equal(tf.scalar(21));
+  openList.push(startNode);
 
-    // Convert the mask to a regular JavaScript array
-    const roadMaskArray = await roadMask.array();
+  while (openList.length > 0) {
+    let currentNode = openList[0];
+    let currentIndex = 0;
 
-    // Extract road pixels from the original image
-    const roadPixels = inputTensor.mul(tf.tensor3d(roadMaskArray, roadMask.shape).expandDims(2));
+    for (let i = 1; i < openList.length; i++) {
+      if (openList[i].f < currentNode.f || (openList[i].f === currentNode.f && openList[i].h < currentNode.h)) {
+        currentNode = openList[i];
+        currentIndex = i;
+      }
+    }
 
-    // Display the result (for demonstration purposes)
-    tf.browser.toPixels(roadPixels, document.getElementById('outputCanvas'));
+    openList.splice(currentIndex, 1);
+    closedList.add(JSON.stringify(currentNode.position));
+
+    if (currentNode.isEqual(endNode)) {
+      const path = [];
+      let current = currentNode;
+      while (current !== null) {
+        path.push(current.position);
+        current = current.parent;
+      }
+      return path.reverse();
+    }
+
+    const children = [];
+    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [-1, 1], [1, -1], [1, 1]];
+
+    for (const direction of directions) {
+      const nodePosition = [currentNode.position[0] + direction[0], currentNode.position[1] + direction[1]];
+
+      if (
+        nodePosition[0] < 0 ||
+        nodePosition[0] >= maze.length ||
+        nodePosition[1] < 0 ||
+        nodePosition[1] >= maze[0].length ||
+        maze[nodePosition[0]][nodePosition[1]] !== 0
+      ) {
+        continue;
+      }
+
+      const child = new Node(currentNode, nodePosition);
+      children.push(child);
+    }
+
+    for (const child of children) {
+      const childString = JSON.stringify(child.position);
+
+      if (closedList.has(childString)) {
+        continue;
+      }
+
+      child.g = currentNode.g + 1;
+      child.h = (child.position[0] - endNode.position[0]) ** 2 + (child.position[1] - endNode.position[1]) ** 2;
+      child.f = child.g + child.h;
+
+      let childInOpenList = false;
+
+      for (const openNode of openList) {
+        if (child.isEqual(openNode) && child.g > openNode.g) {
+          childInOpenList = true;
+          break;
+        }
+      }
+
+      if (!childInOpenList) {
+        openList.push(child);
+      }
+    }
+  }
+
+  return null;
 }
 
-// Example usage
-const imageElement = document.getElementById('images/untitled.png');
-extractRoad(imageElement);
+// Example usage:
+const maze = [
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+];
 
-    </script>
-</body>
+const start = [0, 0];
+const end = [7, 6];
+
+const path = astar(maze, start, end);
+console.log(path);
+
+</script></body>
 </html>
