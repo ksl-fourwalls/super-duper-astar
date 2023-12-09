@@ -109,7 +109,7 @@ async function main() {
         }
     });
 
-    car.setAutopilot(1, 10);
+    car.setAutopilot(1, 16);
 //obstacles[0].setAutopilot(1, 6);
 
     mapcanvas.addEventListener("click", function(e) {
